@@ -385,6 +385,11 @@ Partial Class Form1
         Me.includeSettings = New System.Windows.Forms.CheckBox()
         Me.xmlCopyDone = New System.Windows.Forms.Label()
         Me.TabPage5 = New System.Windows.Forms.TabPage()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.folioAPIkey = New System.Windows.Forms.TextBox()
+        Me.folioAPI = New System.Windows.Forms.TextBox()
+        Me.UseFOLIO = New System.Windows.Forms.RadioButton()
         Me.dontConvert = New System.Windows.Forms.CheckBox()
         Me.xmlShell = New System.Windows.Forms.TextBox()
         Me.Label134 = New System.Windows.Forms.Label()
@@ -2560,7 +2565,7 @@ Partial Class Form1
         Me.Label88.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label88.Location = New System.Drawing.Point(4, 4)
         Me.Label88.Name = "Label88"
-        Me.Label88.Size = New System.Drawing.Size(134, 16)
+        Me.Label88.Size = New System.Drawing.Size(133, 16)
         Me.Label88.TabIndex = 30
         Me.Label88.Text = "Pocket Label Sets"
         '
@@ -4049,7 +4054,7 @@ Partial Class Form1
         Me.Label73.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label73.Location = New System.Drawing.Point(4, 4)
         Me.Label73.Name = "Label73"
-        Me.Label73.Size = New System.Drawing.Size(449, 16)
+        Me.Label73.Size = New System.Drawing.Size(448, 16)
         Me.Label73.TabIndex = 37
         Me.Label73.Text = "Tweak and Test SpineOMatic's Call Number && Holdings Parsing"
         '
@@ -4393,7 +4398,7 @@ Partial Class Form1
         Me.Label28.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label28.Location = New System.Drawing.Point(4, 8)
         Me.Label28.Name = "Label28"
-        Me.Label28.Size = New System.Drawing.Size(85, 16)
+        Me.Label28.Size = New System.Drawing.Size(84, 16)
         Me.Label28.TabIndex = 29
         Me.Label28.Text = "Label type:"
         '
@@ -4404,7 +4409,7 @@ Partial Class Form1
         Me.Spine.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Spine.Location = New System.Drawing.Point(4, 30)
         Me.Spine.Name = "Spine"
-        Me.Spine.Size = New System.Drawing.Size(66, 20)
+        Me.Spine.Size = New System.Drawing.Size(65, 20)
         Me.Spine.TabIndex = 27
         Me.Spine.TabStop = True
         Me.Spine.Tag = "radio_spine"
@@ -4418,7 +4423,7 @@ Partial Class Form1
         Me.CustomLabel.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.CustomLabel.Location = New System.Drawing.Point(4, 184)
         Me.CustomLabel.Name = "CustomLabel"
-        Me.CustomLabel.Size = New System.Drawing.Size(77, 20)
+        Me.CustomLabel.Size = New System.Drawing.Size(76, 20)
         Me.CustomLabel.TabIndex = 28
         Me.CustomLabel.Tag = "radio_currper"
         Me.CustomLabel.Text = "Custom"
@@ -4586,7 +4591,7 @@ Partial Class Form1
         Me.Label57.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label57.Location = New System.Drawing.Point(4, 8)
         Me.Label57.Name = "Label57"
-        Me.Label57.Size = New System.Drawing.Size(107, 16)
+        Me.Label57.Size = New System.Drawing.Size(106, 16)
         Me.Label57.TabIndex = 31
         Me.Label57.Text = "Label Prefixes"
         '
@@ -4634,7 +4639,7 @@ Partial Class Form1
         Me.Label44.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label44.Location = New System.Drawing.Point(12, 76)
         Me.Label44.Name = "Label44"
-        Me.Label44.Size = New System.Drawing.Size(297, 16)
+        Me.Label44.Size = New System.Drawing.Size(296, 16)
         Me.Label44.TabIndex = 27
         Me.Label44.Text = "Enter:  Library Name+Location Name=Label Text"
         '
@@ -4892,6 +4897,11 @@ Partial Class Form1
         'TabPage5
         '
         Me.TabPage5.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
+        Me.TabPage5.Controls.Add(Me.Label6)
+        Me.TabPage5.Controls.Add(Me.Label1)
+        Me.TabPage5.Controls.Add(Me.folioAPIkey)
+        Me.TabPage5.Controls.Add(Me.folioAPI)
+        Me.TabPage5.Controls.Add(Me.UseFOLIO)
         Me.TabPage5.Controls.Add(Me.dontConvert)
         Me.TabPage5.Controls.Add(Me.xmlShell)
         Me.TabPage5.Controls.Add(Me.Label134)
@@ -4912,7 +4922,56 @@ Partial Class Form1
         Me.TabPage5.Name = "TabPage5"
         Me.TabPage5.Size = New System.Drawing.Size(528, 330)
         Me.TabPage5.TabIndex = 4
-        Me.TabPage5.Text = "Alma Access"
+        Me.TabPage5.Text = "API Access"
+        '
+        'Label6
+        '
+        Me.Label6.AutoSize = True
+        Me.Label6.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!)
+        Me.Label6.Location = New System.Drawing.Point(48, 250)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(89, 15)
+        Me.Label6.TabIndex = 77
+        Me.Label6.Text = "FOLIO API Key:"
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!)
+        Me.Label1.Location = New System.Drawing.Point(48, 225)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(92, 15)
+        Me.Label1.TabIndex = 76
+        Me.Label1.Text = "FOLIO Domain:"
+        '
+        'folioAPIkey
+        '
+        Me.folioAPIkey.Location = New System.Drawing.Point(144, 250)
+        Me.folioAPIkey.Name = "folioAPIkey"
+        Me.folioAPIkey.Size = New System.Drawing.Size(296, 20)
+        Me.folioAPIkey.TabIndex = 75
+        Me.folioAPIkey.Tag = "texo_folioapikey"
+        '
+        'folioAPI
+        '
+        Me.folioAPI.Location = New System.Drawing.Point(144, 224)
+        Me.folioAPI.Name = "folioAPI"
+        Me.folioAPI.Size = New System.Drawing.Size(295, 20)
+        Me.folioAPI.TabIndex = 74
+        Me.folioAPI.Tag = "text_folioapi"
+        '
+        'UseFOLIO
+        '
+        Me.UseFOLIO.AutoSize = True
+        Me.UseFOLIO.Font = New System.Drawing.Font("Microsoft Sans Serif", 9.0!, System.Drawing.FontStyle.Bold)
+        Me.UseFOLIO.Location = New System.Drawing.Point(4, 194)
+        Me.UseFOLIO.Name = "UseFOLIO"
+        Me.UseFOLIO.Size = New System.Drawing.Size(119, 19)
+        Me.UseFOLIO.TabIndex = 73
+        Me.UseFOLIO.TabStop = True
+        Me.UseFOLIO.Tag = "radio_useFOLIO"
+        Me.UseFOLIO.Text = "Use FOLIO API"
+        Me.UseFOLIO.UseVisualStyleBackColor = True
         '
         'dontConvert
         '
@@ -5647,7 +5706,7 @@ Partial Class Form1
         Me.decimalCOMMA.Font = New System.Drawing.Font("Courier New", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.decimalCOMMA.Location = New System.Drawing.Point(100, 4)
         Me.decimalCOMMA.Name = "decimalCOMMA"
-        Me.decimalCOMMA.Size = New System.Drawing.Size(34, 20)
+        Me.decimalCOMMA.Size = New System.Drawing.Size(33, 20)
         Me.decimalCOMMA.TabIndex = 1
         Me.decimalCOMMA.Tag = "radio_comma"
         Me.decimalCOMMA.Text = ","
@@ -5662,7 +5721,7 @@ Partial Class Form1
         Me.decimalDOT.Font = New System.Drawing.Font("Courier New", 9.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.decimalDOT.Location = New System.Drawing.Point(60, 4)
         Me.decimalDOT.Name = "decimalDOT"
-        Me.decimalDOT.Size = New System.Drawing.Size(34, 20)
+        Me.decimalDOT.Size = New System.Drawing.Size(33, 20)
         Me.decimalDOT.TabIndex = 0
         Me.decimalDOT.TabStop = True
         Me.decimalDOT.Tag = "radio_decimalpoint"
@@ -6551,5 +6610,9 @@ Partial Class Form1
     Friend WithEvents xmlShell As System.Windows.Forms.TextBox
     Friend WithEvents accessType As System.Windows.Forms.Label
     Friend WithEvents dontConvert As System.Windows.Forms.CheckBox
-
+    Friend WithEvents UseFOLIO As RadioButton
+    Friend WithEvents Label1 As Label
+    Friend WithEvents folioAPIkey As TextBox
+    Friend WithEvents folioAPI As TextBox
+    Friend WithEvents Label6 As Label
 End Class

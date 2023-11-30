@@ -9,6 +9,8 @@ Imports System.Runtime.InteropServices
 Imports System.Net
 Imports System.Xml
 Imports System.Web.Script.Serialization
+Imports Newtonsoft.Json
+Imports System.Collections.Specialized.BitVector32
 
 
 Public Class Form1
@@ -258,6 +260,7 @@ Public Class Form1
     Dim usingDewey As Boolean = False
     Dim xtb As TextBox
     Dim xtbOrigColor As Color
+    Dim jObject As Newtonsoft.Json.Linq.JObject
     Private Const LB_SETTABSTOPS As Int32 = &HCB
 
 
@@ -1197,7 +1200,84 @@ Public Class Form1
         End If
         Return ""
     End Function
+    Private Sub callFOLIO()
+        Dim webClient As New System.Net.WebClient()
+        Dim folioOK As Boolean = True
+        Dim i As Integer = 0
+        Dim addToHistory As Boolean
+        Dim svcRequest As String = ""
+        Dim fixedBarcode As String = ""
+        Dim quot As String = """"
+        lblXMLWarn.Visible = False
+        xmlerr = ""
+        If InputBox.Text = "" Then
+            Beep()
+            Exit Sub
+        End If
 
+        fixedBarcode = Replace(InputBox.Text, "+", "%2B")
+        fixedBarcode = Replace(fixedBarcode, " ", "%20")
+        'svcRequest = Trim(folioAPI.Text) & Trim(apiMethod.Text.Replace("{item_barcode}", fixedBarcode)) & "&apikey=" & Trim(apiKey.Text)
+        svcRequest = Trim(folioAPI.Text) & "/inventory/items?query=(barcode%3D%3D%22" & fixedBarcode & "%22)"
+        'MsgBox(svcRequest, vbCritical, "Endpoint")
+        lastbc = InputBox.Text
+        addToHistory = True
+
+        If Trim(InputBox.Text) = "" Then addToHistory = False
+        If HistoryList.Items.Contains(InputBox.Text) Then addToHistory = False
+        If addToHistory Then
+            If HistoryList.Items.Count = 0 Then
+                HistoryList.Items.Add(InputBox.Text)
+            Else
+                If HistoryList.Items.Item(0) <> InputBox.Text Then
+                    HistoryList.Items.Insert(0, InputBox.Text)
+                End If
+            End If
+
+            If HistoryList.Items.Count = 6 Then
+                HistoryList.Items.RemoveAt(5)
+            End If
+        End If
+
+
+        'if XML is coming from a web call (via java servlet or RESTful call:
+        webClient.Encoding = System.Text.Encoding.UTF8
+        webClient.Headers.Add("Authorization", Trim(folioAPIkey.Text))
+        Try
+
+            Dim jsonReturned = webClient.DownloadString(svcRequest)
+            jObject = Newtonsoft.Json.Linq.JObject.Parse(jsonReturned)
+            Dim title = jObject("items")(0)("title").ToString()
+            Dim callNumber = jObject("items")(0)("callNumber").ToString()
+            'MsgBox(title)
+            OutputBox.Text = "***** TESTING ***** " & vbCrLf & "Trying to retrieve JSON file." & jsonReturned.ToString
+        Catch ex As Exception
+            folioOK = False
+            OutputBox.Text = "***** ERROR ***** " & vbCrLf & "Can't retrieve JSON file." & apiKey.Text & vbCrLf & vbCrLf &
+            "Error message: " & ex.Message
+            'MsgBox("error: " & ex.Message)
+        End Try
+        xmlReturned =
+            "<printout>" & ControlChars.NewLine &
+                "<section-01>" & ControlChars.NewLine &
+                    "<physical_item_display_for_printing>" & ControlChars.NewLine &
+                        "<title>" & jObject("items")(0)("title").ToString() & "</title>" & ControlChars.NewLine &
+                        "<call_number_prefix>" & jObject("items")(0)("effectiveCallNumberComponents")("prefix").ToString() & "</call_number_prefix>" & ControlChars.NewLine &
+                        "<call_number>" & jObject("items")(0)("effectiveCallNumberComponents")("callNumber").ToString() & "</call_number>" & ControlChars.NewLine &
+                        "<call_number_type desc='SpineOMatic User-Defined Scheme'>0</call_number_type>" & ControlChars.NewLine &
+                        "<enumeration></enumeration>" & ControlChars.NewLine &
+                        "<chronology></chronology>" & ControlChars.NewLine &
+                        "<description>Test Description</description>" & ControlChars.NewLine &
+                        "<issue_level_description>TID</issue_level_description>" & ControlChars.NewLine &
+                        "<library_name desc=''>Test Name</library_name>" & ControlChars.NewLine &
+                        "<location_name desc=''>" & jObject("items")(0)("permanentLocation")("name").ToString() & "</location_name>" & ControlChars.NewLine &
+                    "</physical_item_display_for_printing>" & ControlChars.NewLine &
+                "</section-01>" & ControlChars.NewLine &
+            "</printout>"
+        If folioOK Then
+            getBarcodeFile()
+        End If
+    End Sub
     Private Sub callAlma()
 
         Dim webClient As New System.Net.WebClient()
@@ -3080,7 +3160,11 @@ Boolean = True) As String
                 InputBox.Focus()
                 InputBox.Text = temptext
                 AppActivate("SpineOMatic " & somVersion.Replace("/", "."))
-                callAlma()
+                If UseFOLIO.Checked Then
+                    callFOLIO()
+                Else
+                    callAlma()
+                End If
             End If
         End If
     End Sub
@@ -3133,7 +3217,11 @@ Boolean = True) As String
                                 usrname.BackColor = Color.Yellow
                                 usrname.Focus()
                             Else
-                                callAlma()
+                                If UseFOLIO.Checked Then
+                                    callFOLIO()
+                                Else
+                                    callAlma()
+                                End If
                             End If
                         End If
                     End If
@@ -3368,12 +3456,12 @@ Boolean = True) As String
         Catch
             openSettings()
             MsgBox("Welcome to SpineOMatic.  To get started:" _
-            & vbCrLf & vbCrLf & "* In the Print Setup panel, select a printer, and a text font." _
-            & vbCrLf & "* In the Alma Access panel, enter your Ex Libris credentials." _
-            & vbCrLf & "* Obtain an API key from the Ex Libris Developer Network," _
-            & vbCrLf & "and fill out the 'RESTful API' section in the Alma Access panel." & vbCrLf _
-            & vbCrLf & "There are lots of other options and settings available--" _
-            & vbCrLf & "click the 'About' link to get the complete manual." _
+& vbCrLf & vbCrLf & "* In the Print Setup panel, select a printer, and a text font." _
+& vbCrLf & "* In the Alma Access panel, enter your Ex Libris credentials." _
+& vbCrLf & "* Obtain an API key from the Ex Libris Developer Network," _
+& vbCrLf & "and fill out the 'RESTful API' section in the Alma Access panel." & vbCrLf _
+& vbCrLf & "There are lots of other options and settings available--" _
+& vbCrLf & "click the 'About' link to get the complete manual." _
             & vbCrLf & "The Quick Start section will help get you up and running.", MsgBoxStyle.Exclamation, "Getting Started")
             settingsfound = False
             If UseDesktop.Checked Then
@@ -3680,7 +3768,7 @@ Boolean = True) As String
         Catch ex As Exception
             msgStyle = Microsoft.VisualBasic.MsgBoxStyle.Exclamation
             result = "ERROR--Unable to check for new version of SpineOMatic." _
-            & vbCrLf & vbCrLf & ex.ToString()
+& vbCrLf & vbCrLf & ex.ToString()
             MsgBox(result, msgStyle, "SpineOMatic Download")
             Exit Sub
         End Try
@@ -3705,7 +3793,7 @@ Boolean = True) As String
             Catch ex As Exception
                 msgStyle = Microsoft.VisualBasic.MsgBoxStyle.Exclamation
                 result = "ERROR--Unable to download the new version of SpineOMatic." _
-                & vbCrLf & vbCrLf & ex.ToString()
+& vbCrLf & vbCrLf & ex.ToString()
             End Try
         End If
         If OKtoRename Then
@@ -5568,6 +5656,10 @@ Boolean = True) As String
             accessType.Text = "R"
             accessType.ForeColor = Color.Green
             ToolTip1.SetToolTip(accessType, "Using preferred RESTful API access to Alma.")
+        ElseIf UseFOLIO.Checked Then
+            accessType.Text = "F"
+            accessType.ForeColor = Color.Green
+            ToolTip1.SetToolTip(accessType, "Using RESTful API access to FOLIO.")
         Else
             accessType.Text = "J"
             accessType.ForeColor = Color.Red
@@ -5588,6 +5680,30 @@ Boolean = True) As String
     End Sub
 
     Private Sub UpdatePath_TextChanged(sender As Object, e As EventArgs) Handles updatePath.TextChanged
+
+    End Sub
+
+    Private Sub TabPage5_Click(sender As Object, e As EventArgs) Handles TabPage5.Click
+
+    End Sub
+
+    Private Sub UseFOLIO_CheckedChanged(sender As Object, e As EventArgs) Handles UseFOLIO.CheckedChanged
+        If UseRestfulApi.Checked Then
+            accessType.Text = "R"
+            accessType.ForeColor = Color.Green
+            ToolTip1.SetToolTip(accessType, "Using preferred RESTful API access to Alma.")
+        ElseIf UseFOLIO.Checked Then
+            accessType.Text = "F"
+            accessType.ForeColor = Color.Green
+            ToolTip1.SetToolTip(accessType, "Using RESTful API access to FOLIO.")
+        Else
+            accessType.Text = "J"
+            accessType.ForeColor = Color.Red
+            ToolTip1.SetToolTip(accessType, "Caution--Using deprecated Java access to Alma.")
+        End If
+    End Sub
+
+    Private Sub Label1_Click(sender As Object, e As EventArgs) Handles Label1.Click
 
     End Sub
 End Class
