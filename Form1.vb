@@ -1,17 +1,12 @@
 Imports System.IO
-Imports System.Management
-Imports System.Drawing.Drawing2D
-Imports System.Drawing.imaging
-Imports System.Drawing.printing
+Imports System.Drawing.Imaging
+Imports System.Drawing.Printing
 Imports System.Threading
 Imports System.Globalization
 Imports System.Runtime.InteropServices
 Imports System.Net
 Imports System.Xml
 Imports System.Web.Script.Serialization
-Imports Newtonsoft.Json
-Imports System.Collections.Specialized.BitVector32
-
 
 Public Class Form1
     'v. 8.0: Major release
@@ -260,7 +255,7 @@ Public Class Form1
     Dim usingDewey As Boolean = False
     Dim xtb As TextBox
     Dim xtbOrigColor As Color
-    Dim jObject As Newtonsoft.Json.Linq.JObject
+    Dim jsondata As Dictionary(Of String, Object)
     Private Const LB_SETTABSTOPS As Int32 = &HCB
 
 
@@ -1200,6 +1195,7 @@ Public Class Form1
         End If
         Return ""
     End Function
+
     Private Sub callFOLIO()
         Dim webClient As New System.Net.WebClient()
         Dim folioOK As Boolean = True
@@ -1208,6 +1204,14 @@ Public Class Form1
         Dim svcRequest As String = ""
         Dim fixedBarcode As String = ""
         Dim quot As String = """"
+
+        Dim title As String
+        Dim callNumber As String
+        Dim callNumberPrefix As String
+        Dim effectiveLocation As String
+        Dim volume As String
+        Dim authors As String
+
         lblXMLWarn.Visible = False
         xmlerr = ""
         If InputBox.Text = "" Then
@@ -1217,9 +1221,7 @@ Public Class Form1
 
         fixedBarcode = Replace(InputBox.Text, "+", "%2B")
         fixedBarcode = Replace(fixedBarcode, " ", "%20")
-        'svcRequest = Trim(folioAPI.Text) & Trim(apiMethod.Text.Replace("{item_barcode}", fixedBarcode)) & "&apikey=" & Trim(apiKey.Text)
         svcRequest = Trim(folioAPI.Text) & "/inventory/items?query=(barcode%3D%3D%22" & fixedBarcode & "%22)"
-        'MsgBox(svcRequest, vbCritical, "Endpoint")
         lastbc = InputBox.Text
         addToHistory = True
 
@@ -1246,34 +1248,84 @@ Public Class Form1
         Try
 
             Dim jsonReturned = webClient.DownloadString(svcRequest)
-            jObject = Newtonsoft.Json.Linq.JObject.Parse(jsonReturned)
-            Dim title = jObject("items")(0)("title").ToString()
-            Dim callNumber = jObject("items")(0)("callNumber").ToString()
-            'MsgBox(title)
-            OutputBox.Text = "***** TESTING ***** " & vbCrLf & "Trying to retrieve JSON file." & jsonReturned.ToString
+
+            'Deserialize json object and build out individual elements
+            Try
+                Dim rawresp As String = jsonReturned
+                Dim jss As New JavaScriptSerializer()
+                jsondata = jss.Deserialize(Of Dictionary(Of String, Object))(rawresp)
+
+                Try
+                    title = jsondata.Item("items").item(0).item("title").ToString()
+                Catch ex As Exception
+                    title = ""
+                End Try
+                Try
+                    callNumber = jsondata.Item("items").item(0).item("callNumber").ToString()
+                Catch ex As Exception
+                    callNumber = ""
+                End Try
+                Try
+                    For Each Item As Object In jsondata.Item("items").item(0).item("contributorNames")
+                        authors += Item.item("name").ToString()
+                        authors += ", "
+                    Next
+                    Dim charsToTrim() As Char = {" "c, ","c}
+                    authors = authors.Trim(charsToTrim)
+                Catch ex As Exception
+                    authors = ""
+                End Try
+                Try
+                    callNumberPrefix = jsondata.Item("items").item(0).item("effectiveCallNumberComponents").item("prefix").ToString()
+                Catch ex As Exception
+                    callNumberPrefix = ""
+                End Try
+                Try
+                    effectiveLocation = jsondata.Item("items").item(0).item("effectiveLocation").item("name").ToString()
+                Catch ex As Exception
+                    effectiveLocation = ""
+                End Try
+
+                Try
+                    volume = jsondata.Item("items").item(0).item("volume").ToString()
+                Catch ex As Exception
+                    volume = ""
+                End Try
+
+            Catch ex As Exception
+                MsgBox("Error: " & ex.Message)
+            End Try
         Catch ex As Exception
             folioOK = False
             OutputBox.Text = "***** ERROR ***** " & vbCrLf & "Can't retrieve JSON file." & apiKey.Text & vbCrLf & vbCrLf &
             "Error message: " & ex.Message
-            'MsgBox("error: " & ex.Message)
         End Try
-        xmlReturned =
+        Try
+            xmlReturned =
             "<printout>" & ControlChars.NewLine &
                 "<section-01>" & ControlChars.NewLine &
                     "<physical_item_display_for_printing>" & ControlChars.NewLine &
-                        "<title>" & jObject("items")(0)("title").ToString() & "</title>" & ControlChars.NewLine &
-                        "<call_number_prefix>" & jObject("items")(0)("effectiveCallNumberComponents")("prefix").ToString() & "</call_number_prefix>" & ControlChars.NewLine &
-                        "<call_number>" & jObject("items")(0)("effectiveCallNumberComponents")("callNumber").ToString() & "</call_number>" & ControlChars.NewLine &
+                        "<title>" & title & "</title>" & ControlChars.NewLine &
+                        "<author>" & authors & "</author>" & ControlChars.NewLine &
+                        "<call_number_prefix>" & callNumberPrefix & "</call_number_prefix>" & ControlChars.NewLine &
+                        "<call_number>" & callNumber & "</call_number>" & ControlChars.NewLine &
                         "<call_number_type desc='SpineOMatic User-Defined Scheme'>0</call_number_type>" & ControlChars.NewLine &
                         "<enumeration></enumeration>" & ControlChars.NewLine &
                         "<chronology></chronology>" & ControlChars.NewLine &
-                        "<description>Test Description</description>" & ControlChars.NewLine &
-                        "<issue_level_description>TID</issue_level_description>" & ControlChars.NewLine &
-                        "<library_name desc=''>Test Name</library_name>" & ControlChars.NewLine &
-                        "<location_name desc=''>" & jObject("items")(0)("permanentLocation")("name").ToString() & "</location_name>" & ControlChars.NewLine &
+                        "<description></description>" & ControlChars.NewLine &
+                        "<issue_level_description>" & volume & "</issue_level_description>" & ControlChars.NewLine &
+                        "<library_name desc=''></library_name>" & ControlChars.NewLine &
+                        "<location_name desc=''>" & effectiveLocation & "</location_name>" & ControlChars.NewLine &
                     "</physical_item_display_for_printing>" & ControlChars.NewLine &
                 "</section-01>" & ControlChars.NewLine &
             "</printout>"
+            'MsgBox(xmlReturned)
+        Catch ex As Exception
+            folioOK = False
+            OutputBox.Text = "***** ERROR ***** " & vbCrLf & "Data file is empty." & vbCrLf & vbCrLf &
+            "Error message: " & ex.Message
+        End Try
+
         If folioOK Then
             getBarcodeFile()
         End If
