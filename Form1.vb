@@ -1261,7 +1261,7 @@ Public Class Form1
                     title = ""
                 End Try
                 Try
-                    callNumber = jsondata.Item("items").item(0).item("callNumber").ToString()
+                    callNumber = jsondata.Item("items").item(0).item("effectiveCallNumberComponents").item("callNumber").ToString()
                 Catch ex As Exception
                     callNumber = ""
                 End Try
