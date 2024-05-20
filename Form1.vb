@@ -1211,6 +1211,7 @@ Public Class Form1
         Dim effectiveLocation As String
         Dim volume As String
         Dim authors As String
+        Dim barcode As String
 
         lblXMLWarn.Visible = False
         xmlerr = ""
@@ -1292,6 +1293,12 @@ Public Class Form1
                     volume = ""
                 End Try
 
+                Try
+                    barcode = jsondata.Item("items").item(0).item("barcode").ToString()
+                Catch ex As Exception
+                    barcode = ""
+                End Try
+
             Catch ex As Exception
                 MsgBox("Error: " & ex.Message)
             End Try
@@ -1307,6 +1314,7 @@ Public Class Form1
                     "<physical_item_display_for_printing>" & ControlChars.NewLine &
                         "<title>" & title & "</title>" & ControlChars.NewLine &
                         "<author>" & authors & "</author>" & ControlChars.NewLine &
+                        "<barcode>" & barcode & "</barcode>" & ControlChars.NewLine &
                         "<call_number_prefix>" & callNumberPrefix & "</call_number_prefix>" & ControlChars.NewLine &
                         "<call_number>" & callNumber & "</call_number>" & ControlChars.NewLine &
                         "<call_number_type desc='SpineOMatic User-Defined Scheme'>0</call_number_type>" & ControlChars.NewLine &
